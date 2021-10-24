@@ -113,20 +113,7 @@ class PropositionApi {
         List<Map<String, dynamic>> elements2 =
         webScraperLiv.getElement("tr.table-itens > td > span", [""]); // ementa
         List<String> elements3 =
-        webScraperLiv.getElementAttribute("tr.table-itens > td.mapa > a", "href");//ALTEREI AQUI
-
-        print("O tamanho da lista 1 é: ${elements1.length}");
-        print("O tamanho da lista 3 é: ${elements3.length}");
-
-        for(int i = 0; i <elements3.length; i++){
-          String teste = elements3[i];
-          if(teste.startsWith("http://") || teste.startsWith("/fserver/:")){
-            elements3.removeAt(i);
-            print("Elemento removido");
-          }
-        }
-
-        print("O novo tamanho da lista 3 é: ${elements3.length}");
+        webScraperLiv.getElementAttribute("tr.table-itens > td.mapa > a", "href");
 
         if(elements1.length > 0){
 

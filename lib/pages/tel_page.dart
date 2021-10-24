@@ -1,8 +1,11 @@
 import 'package:alba_app/helpers/usuario_helper.dart';
+import 'package:alba_app/pages/dep_page.dart';
 import 'package:alba_app/pages/deputados_page.dart';
 import 'package:alba_app/pages/maisalba_page.dart';
 import 'package:alba_app/pages/noticias_page.dart';
+import 'package:alba_app/pages/pesq_news_page.dart';
 import 'package:alba_app/pages/pesq_telefones_page.dart';
+import 'package:alba_app/pages/pesq_tododep_page.dart';
 import 'package:alba_app/pages/telefones_page.dart';
 import 'package:alba_app/pages/todosdep_page.dart';
 import 'package:alba_app/presentation/custom_icons_icons.dart';
@@ -99,6 +102,15 @@ class _TelPageState extends State<TelPage> {
             width: 100.0,),
           actions: <Widget>[
             IconButton(
+              icon: Icon(Icons.search),
+              tooltip: "Pesquisar",
+              onPressed: (){
+                Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (context) => PlacePesqNewsWidget()));
+              },
+            ),
+            IconButton(
               icon: Icon(Icons.refresh),
               tooltip: "Recarregar",
               onPressed: (){
@@ -116,6 +128,23 @@ class _TelPageState extends State<TelPage> {
           title: Image.asset("assets/images/marca_mobi.png",
             width: 100.0,),
           actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.search),
+              tooltip: "Pesquisar",
+              onPressed: (){
+                Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (context) => PlacePesqTodoDepWidget()));
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.refresh),
+              tooltip: "Recarregar",
+              onPressed: (){
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => DepPage()));
+              },
+            ),
             IconButton(
               icon: Icon(CustomIcons.dep),
               tooltip: "Listar todos dep",
@@ -140,6 +169,14 @@ class _TelPageState extends State<TelPage> {
               onPressed: (){
                 Navigator.push(context, MaterialPageRoute(
                     builder: (context) => PlacePesqTelefonesWidget()));
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.refresh),
+              tooltip: "Recarregar",
+              onPressed: (){
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => TelPage()));
               },
             ),
           ],

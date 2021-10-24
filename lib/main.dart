@@ -19,6 +19,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   UsuarioModel userLogado = UsuarioModel();
   UsuarioHelper userHelper = UsuarioHelper();
+  String _debugLabelString = "";
   bool _enableConsentButton = false;
   bool _requireConsent = true;
 
@@ -48,11 +49,33 @@ class _MyAppState extends State<MyApp> {
       print("Permissão aceita: $accepted");
     });
 
+    OneSignal.shared
+        .setNotificationWillShowInForegroundHandler((OSNotificationReceivedEvent event) {
+      print('FOREGROUND HANDLER CALLED WITH: ${event}');
+      /// Display Notification, send null to not display
+      event.complete(null);
+
+      this.setState(() {
+        _debugLabelString =
+        "Notification received in foreground notification: \n${event.notification.jsonRepresentation().replaceAll("\\n", "\n")}";
+      });
+    });
+
+    OneSignal.shared
+        .setInAppMessageClickedHandler((OSInAppMessageAction action) {
+      this.setState(() {
+        _debugLabelString =
+        "In App Message Clicked: \n${action.jsonRepresentation().replaceAll("\\n", "\n")}";
+      });
+    });
+
     bool requiresConsent = await OneSignal.shared.requiresUserPrivacyConsent();
 
     this.setState(() {
       _enableConsentButton = requiresConsent;
     });
+
+    OneSignal.shared.disablePush(false);
 
   }
 

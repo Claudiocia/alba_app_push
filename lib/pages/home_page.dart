@@ -1,7 +1,10 @@
 import 'package:alba_app/pages/deputados_page.dart';
 import 'package:alba_app/pages/maisalba_page.dart';
 import 'package:alba_app/pages/noticias_page.dart';
+import 'package:alba_app/pages/pesq_news_page.dart';
 import 'package:alba_app/pages/pesq_telefones_page.dart';
+import 'package:alba_app/pages/pesq_tododep_page.dart';
+import 'package:alba_app/pages/tel_page.dart';
 import 'package:alba_app/pages/telefones_page.dart';
 import 'package:alba_app/pages/todosdep_page.dart';
 import 'package:alba_app/presentation/custom_icons_icons.dart';
@@ -9,6 +12,8 @@ import 'package:alba_app/splashscreen.dart';
 import 'package:alba_app/utils/news_api.dart';
 import 'package:alba_app/widgets/custom_drawer.dart';
 import 'package:flutter/material.dart';
+
+import 'dep_page.dart';
 
 class HomePage extends StatefulWidget {
   HomePage();
@@ -98,6 +103,15 @@ class _HomePageState extends State<HomePage> {
             width: 100.0,),
           actions: <Widget>[
             IconButton(
+              icon: Icon(Icons.search),
+              tooltip: "Pesquisar",
+              onPressed: (){
+                Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (context) => PlacePesqNewsWidget()));
+              },
+            ),
+            IconButton(
               icon: Icon(Icons.refresh),
               tooltip: "Recarregar",
               onPressed: (){
@@ -115,6 +129,23 @@ class _HomePageState extends State<HomePage> {
           title: Image.asset("assets/images/marca_mobi.png",
             width: 100.0,),
           actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.search),
+              tooltip: "Pesquisar",
+              onPressed: (){
+                Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (context) => PlacePesqTodoDepWidget()));
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.refresh),
+              tooltip: "Recarregar",
+              onPressed: (){
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => DepPage()));
+              },
+            ),
             IconButton(
               icon: Icon(CustomIcons.dep),
               tooltip: "Listar todos dep",
@@ -139,6 +170,14 @@ class _HomePageState extends State<HomePage> {
               onPressed: (){
                 Navigator.push(context, MaterialPageRoute(
                     builder: (context) => PlacePesqTelefonesWidget()));
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.refresh),
+              tooltip: "Recarregar",
+              onPressed: (){
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => TelPage()));
               },
             ),
           ],
