@@ -1,5 +1,6 @@
 import 'package:alba_app/helpers/comissao_helper.dart';
 import 'package:alba_app/models/comissao_model.dart';
+import 'package:alba_app/pages/pesq_comissoes_page.dart';
 import 'package:alba_app/widgets/custom_drawer.dart';
 import 'package:flutter/material.dart';
 
@@ -37,6 +38,24 @@ class _PlaceComissoesWidgetState extends State<PlaceComissoesWidget> {
           centerTitle: true,
           title: Image.asset("assets/images/marca_mobi.png",
             width: 100.0,),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.search),
+              tooltip: "Pesquisar",
+              onPressed: (){
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => PlacePesqComissoesWidget()));
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.refresh),
+              tooltip: "Recarregar",
+              onPressed: (){
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => PlaceComissoesWidget()));
+              },
+            ),
+          ],
         ),
         drawer: CustomDrawer(),
         body: listaComissoes(),

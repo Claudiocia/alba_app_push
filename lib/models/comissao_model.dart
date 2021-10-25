@@ -17,6 +17,7 @@ class ComissaoModel {
   String membrosComiss;
   String supleComiss;
   String assessorComiss;
+  String pesqComiss;
 
   ComissaoModel();
 
@@ -34,6 +35,7 @@ class ComissaoModel {
     membrosComiss = map[comissMembCol];
     supleComiss = map[comissSupleCol];
     assessorComiss = map[comissAsseCol];
+    pesqComiss = map[comissPesqCol];
   }
 
   Map toMap(){
@@ -48,7 +50,8 @@ class ComissaoModel {
       comissViceCol: viceComiss,
       comissMembCol: membrosComiss,
       comissSupleCol: supleComiss,
-      comissAsseCol: assessorComiss
+      comissAsseCol: assessorComiss,
+      comissPesqCol: pesqComiss,
     };
     if(idComiss != null){
       map[comissIdCol] = idComiss;

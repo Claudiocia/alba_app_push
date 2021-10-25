@@ -2,6 +2,7 @@
 
 import 'package:alba_app/helpers/bd_plunge.dart';
 import 'package:alba_app/models/comissao_model.dart';
+import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 
 
@@ -54,6 +55,16 @@ class ComissaoHelper {
   Future<List> getAllComiss() async {
     Database dbComiss = await BdPlunge.instance.dbAlba;
     List listMap = await dbComiss.rawQuery("SELECT * FROM $tabComiss");
+    List<ComissaoModel> listComiss = [];
+    for(Map m in listMap){
+      listComiss.add(ComissaoModel.fromMap(m));
+    }
+    return listComiss;
+  }
+
+  Future<List> getPesqAllComiss(String pesq) async {
+    Database dbComiss = await BdPlunge.instance.dbAlba;
+    List listMap = await dbComiss.query("$tabComiss", where: "$comissPesqCol LIKE ? ", whereArgs: ["%$pesq%"]);
     List<ComissaoModel> listComiss = [];
     for(Map m in listMap){
       listComiss.add(ComissaoModel.fromMap(m));

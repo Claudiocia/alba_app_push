@@ -1,8 +1,4 @@
-import 'dart:io';
-
-import 'package:alba_app/helpers/controle_helper.dart';
 import 'package:alba_app/helpers/usuario_helper.dart';
-import 'package:alba_app/models/controle_model.dart';
 import 'package:alba_app/pages/dep_page.dart';
 import 'package:alba_app/pages/home_page.dart';
 import 'package:alba_app/pages/mais_page.dart';
@@ -11,7 +7,6 @@ import 'package:alba_app/utils/news_api.dart';
 import 'package:alba_app/widgets/custom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:rate_my_app/rate_my_app.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class PrincPage extends StatefulWidget {
   PrincPage();
@@ -33,10 +28,6 @@ class _PrincPageState extends State<PrincPage> {
   //Variaveis para teste do banco
   UsuarioHelper helper = UsuarioHelper();
   NewsApi news = NewsApi();
-  //PackageInfo packageInfo;
-  //VersionMyApp _versionMyApp = VersionMyApp();
-  ControleModel controle = ControleModel();
-  ControleHelper controleHelper = ControleHelper();
   var hoje = DateTime.now();
 
 
@@ -45,20 +36,8 @@ class _PrincPageState extends State<PrincPage> {
     // TODO: implement initState
     super.initState();
 
-    controleHelper.getControle().then((value){
-      if(value != null){
-        controle = value;
-      }
-    });
-    /*
-    PackageInfo.fromPlatform().then((value) {
-      if(value != null){
-        packageInfo = value;
-      }
-    });
-     */
     _rateMyApp.init().then((_) {
-      print("O PRINT DO RATE É ESSE "+ _rateMyApp.shouldOpenDialog.toString());
+      //print("O PRINT DO RATE É ESSE "+ _rateMyApp.shouldOpenDialog.toString());
       if(_rateMyApp.shouldOpenDialog){
         _rateMyApp.showRateDialog(
           context,
@@ -91,18 +70,7 @@ class _PrincPageState extends State<PrincPage> {
           onDismissed: () =>
               _rateMyApp.callEvent(RateMyAppEventType.laterButtonPressed),
         );
-      }/*else if(packageInfo != null && controle != null){
-        print("Voltou estou no init " + packageInfo.version.toString());
-       // bool test;
-        String versAtual = packageInfo.version.toString();
-        //test = _versionMyApp.verificaVersao(versAtual);
-        print("Proxima verific que volta do bd " + controle.proximaVerifc);
-        var dia = DateTime.parse(controle.proximaVerifc);
-        //if(test == true && hoje.compareTo(dia) >= 0){
-        //  showPackageInfo();
-       // }
       }
-      */
     });
     news.loadNews().then((value){});
   }
@@ -176,83 +144,4 @@ class _PrincPageState extends State<PrincPage> {
         break;
     }
   }
-
-  //Metodos para verificação de atualizações
-
-  showPackageInfo(){
-      return showDialog(
-          context: context,
-          builder: (context) =>
-              AlertDialog(
-                title: Text('Nova versão do APP',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                content: Text(
-                    "Está disponível a nova versão do Aplicativo ALBA. Clique no botão abaixo para realizar a atualização. \n"
-                        "Esta nova versão tem atualizações de dados e novas funcionalidades. "
-                ),
-                actions: <Widget>[
-                  TextButton(
-                      onPressed: () {
-                        _atualizeData();
-                        Navigator.of(context).pop(true);
-                        },
-                      child: Text("DEPOIS",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.black),
-                      )
-                  ),
-                  TextButton(
-                      onPressed: () {
-                        _launchStore();
-                        _atualizeData();
-                        Navigator.of(context).pop(true);
-                      },
-                      child: Text("ATUALIZAR",
-                        style: TextStyle(fontWeight: FontWeight.bold,
-                            color: Colors.blueAccent),
-                      )
-                  )
-                ],
-              )
-      );
-  }
-
-  _launchStore() async{
-    if (Platform.isIOS) {
-      //var url = "https://apps.apple.com/br/app/aplicativo-alba/id1548223913";
-      var url2 = 'itms://aplicativo-alba/id1548223913';
-      if (await canLaunch(url2)) {
-        await launch(url2);
-      } else {
-        throw 'Could not launch $url2';
-      }
-    }
-    if (Platform.isAndroid) {
-      //var url = "https://play.google.com/store/apps/details?id=br.com.nortemkt.alba_app";
-      var url2 = 'market://details?id=br.com.nortemkt.alba_app';
-      if (await canLaunch(url2)) {
-        await launch(url2);
-      } else {
-        throw 'Could not launch $url2';
-      }
-    }
-  }
-
-  _atualizeData(){
-    Map<String, dynamic> controlMap = {
-      "idControl" : controle.idControle,
-      "versao_atual" : controle.versionAtual,
-      "ultimaVerific" : (hoje.add(new Duration(days: -10))).toString(),
-      "proximaVerific" : hoje.toString(),
-    };
-    controleHelper.updateControle(controlMap).then((value){
-      if(value == null){
-        print("DEU MERDA NO BANCO");
-      }else{
-        print("DEU CERTO O Metodo devolveu: "+ value.toString());
-      }
-    });
-  }
-
 }

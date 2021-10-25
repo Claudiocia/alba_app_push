@@ -35,6 +35,7 @@ final String comissViceCol = "viceComiss";
 final String comissMembCol = "membrosComiss";
 final String comissSupleCol = "supleComiss";
 final String comissAsseCol = "assessorComiss";
+final String comissPesqCol = "pesqComiss";
 
 final String tabMesadir = "mesadir";
 final String mesaIdCol = "idMesa";
@@ -95,12 +96,6 @@ final String linkPaginCol = "linkPagin";
 final String inMandatCol = "inMandat";
 final String tagCol = "tag";
 
-final String tabControle = "tb_controle";
-final String idControleCol = "idControl";
-final String versionAtualCol = "versao_atual";
-final String ultimaVerifcCol = "ultimaVerific";
-final String proximaVerifcCol = "proximaVerific";
-
 class BdPlunge {
   //Aplicação do padrão Singleton na Classe (Para que exista apenas um Banco
 
@@ -116,16 +111,18 @@ class BdPlunge {
   Future<Database> get dbAlba async {
     if (dbAlb != null) {
       _version = await dbAlb.getVersion();
-      print("A versão do banco é: $_version");
-      if(_version <= 9 ){
-        dbAlb = await updateDb(dbAlb, _version, 10);
+      print("Verificou a versão do banco é: $_version");
+      if(_version < 12){
+        dbAlb = await updateDb(dbAlb, _version, 12);
+        print("disparou update");
         return dbAlb;
       }else{
+        print("não rodou update");
         return dbAlb;
       }
-    } else {
-      dbAlb = await initDb();
-      return dbAlb;
+    } else if(dbAlb == null){
+      print("O banco não existe cria");
+      return dbAlb = await initDb();
     }
   }
 
@@ -135,7 +132,7 @@ class BdPlunge {
 
     List<String> listQueries = formQueries();
 
-    return await openDatabase(path, version: 10,
+    return await openDatabase(path, version: 11,
         onCreate: (Database db, int newerVersion) async {
           for (String query in listQueries) {
             await db.execute(query);
@@ -145,8 +142,6 @@ class BdPlunge {
 
   Future<Database> updateDb(Database db, int oldVersion, int newVersion) async {
     List<String> listQueriesAtualiz = formQueriesAtualiz();
-    print("disparou update");
-
     await db.execute("DROP TABLE IF EXISTS $tabLivros;");
     await db.execute("DROP TABLE IF EXISTS $tabDep;");
     await db.execute("DROP TABLE IF EXISTS $tabComiss;");
@@ -154,15 +149,12 @@ class BdPlunge {
     await db.execute("DROP TABLE IF EXISTS $tabSetores;");
     await db.execute("DROP TABLE IF EXISTS $tabPart;");
     await db.execute("DROP TABLE IF EXISTS $tabTodosDep;");
-    await db.execute("DROP TABLE IF EXISTS $tabControle;");
-
 
     for (int i = 0; i < listQueriesAtualiz.length; i++) {
       String queryAtualiz = listQueriesAtualiz[i];
       await db.execute(queryAtualiz);
     }
     await db.setVersion(newVersion);
-
     return db;
   }
 
@@ -494,156 +486,206 @@ class BdPlunge {
           "$comissTipoCol TEXT, $comissTelCol	TEXT, $comissLocCol	TEXT, "
           "$comissDiaCol	TEXT, $comissHoraCol	TEXT, $comissPresCol	TEXT, "
           "$comissViceCol	TEXT, $comissMembCol	TEXT, $comissSupleCol	TEXT, "
-          "$comissAsseCol TEXT );",
+          "$comissAsseCol TEXT, $comissPesqCol TEXT);",
 
       //COMISSÕES INSERÇÃO DE DADOS PERMANENTES -- --ATUALIZAÇÃO
 
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Constituição e Justiça', 'Permanente', '3115-7306/3115-7307', "
           "'Sala Luís Cabral', 'Terça-feira', '10h', 'Marcelino Galo Lula', 'Paulo Câmara', "
           "'Alan Sanches/Antônio Henrique Jr./Euclides Fernandes/Ivana Bastos/Vitor Bonfim/Zé Raimundo Lula', "
-          "'Fabíola Mansur/Luciano Simões Filho/Pastor Isidório Filho/Roberto Carlos', 'Valeria Simões / Rainildes Rocha');",
+          "'Fabíola Mansur/Luciano Simões Filho/Pastor Isidório Filho/Roberto Carlos', 'Valeria Simões / Rainildes Rocha', "
+          "'Constituicao e Justica Permanente Terca-feira Terca Marcelino Galo Paulo Camara Alan Sanches Antonio Henrique "
+          " Jr. Euclides Fernandes Ivana Bastos Vitor Bonfim Ze Raimundo Fabiola Mansur Luciano Simoes Filho Pastor "
+          " Isidorio Filho Roberto Carlos');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Defesa do Consumidor e Relações de Trabalho', 'Permanente', '3115-7289', "
           "'Sala Jairo Azi', 'Quarta-feira', '10h', 'Capitão Alden', 'Fabrício Falcão', "
           "'Angelo Almeida/Jacó Lula da Silva/Júnior Muniz/Marcelinho Veiga/Marcelino Galo Lula/Tiago Correia', "
-          "'Fabíola Mansur/Maria del Carmen Lula/Pastor Isidório Filho/Talita Oliveira', 'Carinina Andrade');",
+          "'Fabíola Mansur/Maria del Carmen Lula/Pastor Isidório Filho/Talita Oliveira', 'Carinina Andrade', "
+          "'Defesa do Consumidor e Relacoes de Trabalho Permanente Quarta-feira Quarta Capitao Alden "
+          " Fabricio Falcao Angelo Almeida Jaco Junior Muniz Marcelinho Veiga Marcelino Galo Tiago "
+          " Correia Fabiola Mansur Maria del Carmen Pastor Isidorio Filho Talita Oliveira');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Agricultura e Política Rural', 'Permanente', '3115-7215/3115-2913', "
           "'Sala Jadiel Matos', 'Terça-feira', '09h', 'Jusmari Oliveira', 'Sandro Régis', "
           "'Eduardo Salles/Jacó Lula da Silva/Neusa Lula Cadore/Tom Araújo/Vitor Bonfim/Zó', "
-          "'Aderbal Caldas/Antonio Henrique Jr./Osni Cardoso Lula da Silva/Paulo Câmara/Pedro Tavares', 'Bruna de Souza Santana');",
+          "'Aderbal Caldas/Antonio Henrique Jr./Osni Cardoso Lula da Silva/Paulo Câmara/Pedro Tavares', "
+          "'Bruna de Souza Santana', 'Agricultura e Politica Rural Permanente Terca-feira Terca Jusmari "
+          " Oliveira Sandro Regis Eduardo Salles Jaco Neusa Cadore Tom Araujo Vitor Bonfim Zo "
+          " Aderbal Caldas Antonio Henrique Jr. Osni Cardoso Paulo Camara Pedro Tavares');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Educação, Cultura, Ciência e Tecnologia e Serviço Público', 'Permanente', "
           "'3115-7110', 'Sala José Amando', 'Terça-feira', '11h', 'Fabíola Mansur', 'Talita Oliveira', "
           "'Bira Corôa Lula/Olivia Santana/Osni Cardoso Lula da Silva/Robinson Almeida Lula/Rosemberg Lula Pinto/Soldado Prisco', "
-          "'Hilton Coelho/Jurandy Oliveira/Tiago Correia', 'Carinina Andrade');",
+          "'Hilton Coelho/Jurandy Oliveira/Tiago Correia', 'Carinina Andrade', 'Educacao Cultura Ciencia Tecnologia Servico Publico"
+          " Permanente Terca-feira Terca Fabiola Mansur Talita Oliveira Bira Coroa Olivia Santana Osni Cardoso Robinson Almeida "
+          " Rosemberg Pinto Soldado Prisco Hilton Coelho Jurandy Oliveira Tiago Correia');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Direitos Humanos e Segurança Pública', 'Permanente', '3115-7197', "
           "'Sala Herculano Menezes', 'Terça-feira', '10h30', 'Jacó Lula da Silva', 'Capitão Alden', "
           "'Fabíola Mansur/Fátima Nunes Lula/ Maria del Carmen Lula/Osni Cardoso Lula da Silva/Rogério Andrade Filho/Soldado Prisco', "
-          "'Hilton Coelho/Jurailton Santos/Pastor Isidório Filho/Robinson Almeida Lula', 'Elbani de Oliveira Sousa');",
+          "'Hilton Coelho/Jurailton Santos/Pastor Isidório Filho/Robinson Almeida Lula', 'Elbani de Oliveira Sousa', 'Direitos Humanos "
+          " Seguranca Publica Permanente Terca-feira Terca Jaco Capitao Alden Fabiola Mansur Fatima Nunes Maria del Carmen Osni Cardoso "
+          " Rogerio Andrade Filho Soldado Prisco Hilton Coelho Jurailton Santos Pastor Isidorio Filho Robinson Almeida');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. dos Direitos da Mulher', 'Permanente', '3115-7110', 'Sala José Amando', "
           "'Quarta-feira', '11h', 'Olívia Santana', 'Kátia Oliveira', "
           "'Fabíola Mansur/Fátima Nunes Lula/Ivana Bastos/Jusmari Oliveira/Neusa Lula Cadore/Talita Oliveira', "
-          "'Jacó Lula da Silva/José de Arimateia/Maria del Carmen Lula/Mirela Macedo', 'Elbani de Oliveira Sousa');",
+          "'Jacó Lula da Silva/José de Arimateia/Maria del Carmen Lula/Mirela Macedo', 'Elbani de Oliveira Sousa', "
+          "'Direitos da Mulher Permanente Quarta-feira Quarta Olivia Santana Katia Oliveira Fabiola Mansur Fatima "
+          " Nunes Ivana Bastos Jusmari Oliveira Neusa Cadore Talita Oliveira Jacó Jose de Arimateia "
+          " Maria del Carmen Mirela Macedo');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Finanças, Orçamento, Fiscalização e Controle', 'Permanente', "
           "'3115-7289', 'Sala Jairo Azi', 'Terça-feira', '11h15', 'Robinho', 'Tiago Correia', "
           "'Alan Castro/Diego Coronel/Luciano Simões Filho/Samuel Júnior/Vitor Bonfim/Zé Raimundo Lula', "
-          "'Jacó Lula da Silva/Marquinho Viana/Paulo Rangel Lula da Silva/Pedro Tavares', 'Iara Maria Loureiro de Oliveira');",
+          "'Jacó Lula da Silva/Marquinho Viana/Paulo Rangel Lula da Silva/Pedro Tavares', 'Iara Maria Loureiro de Oliveira', "
+          "'Financas Orcamento Fiscalizacao e Controle Permanente Terca-feira Terca Robinho Tiago Correia "
+          " Alan Castro Diego Coronel Luciano Simoes Filho Samuel Junior Vitor Bonfim Ze Raimundo Jaco "
+          " Marquinho Viana Paulo Rangel Pedro Tavares');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Infraestrutura, Desenvolvimento Econômico e Turismo', 'Permanente', "
           "'3115-7289', 'Sala Jairo Azi', 'Terça-feira', '9h30', 'Pedro Tavares', 'Niltinho', "
           "'Alex Lima/Eduardo Salles/Jusmari Oliveira/Maria del Carmen Lula/Roberto Carlos/Tom Araújo', "
-          "'Bira Corôa Lula/Robinson Almeida Lula/Tiago Correia/Tum', 'Raiana de Oliveira Pacheco');",
+          "'Bira Corôa Lula/Robinson Almeida Lula/Tiago Correia/Tum', 'Raiana de Oliveira Pacheco', 'Infraestrutura "
+          " Desenvolvimento Economico e Turismo Permanente Terca-feira Terca Pedro Tavares Niltinho Alex Lima Eduardo "
+          " Salles Jusmari Oliveira Maria del Carmen Roberto Carlos Tom Araujo Bira Coroa Robinson Almeida Tiago Correia Tum');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Meio Ambiente, Seca e Recursos Hídricos', 'Permanente', "
           "'3115-7235/3115-2909', 'Sala Eliel Martins', 'Quarta-feira', '10h15', "
           "'José de Arimateia', 'Marcelino Galo Lula', "
           "'Aderbal Caldas/Fátima Nunes Lula/Josafá Marinho/Marcelinho Veiga/Osni Cardoso Lula da Silva/Zó', "
-          "'Eduardo Salles/Jacó Lula da Silva/Jurailton Santos/Tum', 'Raiana de Oliveira Pacheco');",
+          "'Eduardo Salles/Jacó Lula da Silva/Jurailton Santos/Tum', 'Raiana de Oliveira Pacheco', 'Meio Ambiente "
+          " Seca e Recursos Hidricos Permanente Quarta-feira Quarta Jose de Arimateia Marcelino Galo Aderbal Caldas "
+          " Fatima Nunes Josafa Marinho Marcelinho Veiga Osni Cardoso Zo Eduardo Salles Jaco Jurailton Santos Tum');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Saúde e Saneamento', 'Permanente', '3115-7235/3115-2909', 'Sala Eliel Martins', "
           "'Terça-feira', '10h', 'Eduardo Alencar', 'José de Arimateia', "
           "'Alan Sanches/Alex da Piatã/Bira Corôa Lula/Fabíola Mansur/Jacó Lula da Silva/Niltinho', "
-          "'Angelo Almeida/Carlos Geilson/Euclides Fernandes/Jurandy Oliveira', 'Nancy Lima Pinto da Silva');",
+          "'Angelo Almeida/Carlos Geilson/Euclides Fernandes/Jurandy Oliveira', 'Nancy Lima Pinto da Silva', "
+          "'Saude e Saneamento Permanente Terca-feira Terca Eduardo Alencar Jose de Arimateia Alan Sanches "
+          " Alex da Piata Bira Coroa Fabiola Mansur Jaco Niltinho Angelo Almeida Carlos Geilson Euclides "
+          " Fernandes Jurandy Oliveira');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Cons. de Ética e Decoro Parlamentar', 'Permanente', '3115-7235/3115-2909', 'Não Informado', "
           "'Não Informado', 'Não Informado', 'Marquinho Viana', 'Sandro Régis', "
           "'Euclides Fernandes/Luciano Simões Filho/Aderbal Caldas/Bobô/Fabíola Mansur/Zé Raimundo Lula', "
-          "'Tiago Correia/Eduardo Alencar/Neusa Lula Cadore/Fátima Nunes Lula/Samuel Júnior/Vitor Bonfim/Eduardo Salles', 'Não Informado');",
+          "'Tiago Correia/Eduardo Alencar/Neusa Lula Cadore/Fátima Nunes Lula/Samuel Júnior/Vitor Bonfim/Eduardo Salles', "
+          "'Não Informado', 'Etica e Decoro Parlamentar Permanente Marquinho Viana Sandro Regis Euclides Fernandes Luciano "
+          " Simoes Filho Aderbal Caldas Bobo Fabiola Mansur Ze Raimundo Tiago Correia Eduardo Alencar Neusa Cadore "
+          " Fatima Nunes Samuel Junior Vitor Bonfim Eduardo Salles');",
 
-      //FIM DAS PERMANENTES INICIO DAS TEMPORARIAS --ATUALIZAÇÃO
+      //FIM DAS PERMANENTES INICIO DAS TEMPORARIAS
 
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. Especial de Acompanhamento e Fiscalização de Barragens', 'Temporária', "
           "'3115-7289', 'Sala José Amando', 'Quarta-feira', '9h', 'Alan Castro', 'Laerte do Vando', "
           "'Eduardo Alencar/José de Arimateia/Júnior Muniz/Maria del Carmen Lula/Robinson Almeida Lula/Samuel Júnior', "
-          "'Marcelino Galo Lula/Tum', 'Tania Maria da Silva Bispo');",
+          "'Marcelino Galo Lula/Tum', 'Tania Maria da Silva Bispo', 'Especial de Acompanhamento e Fiscalizacao "
+          " de Barragens Temporaria Quarta-feira Quarta Alan Castro Laerte do Vando Eduardo Alencar Jose de Arimateia "
+          " Junior Muniz Maria del Carmen Robinson Almeida Samuel Junior Marcelino Galo Tum');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. Especial de Assuntos Territoriais e Emancipação', 'Temporária', "
           "'3115-7215/3115-2913', 'Sala Jadiel Matos', 'Quarta-feira', '9h15', "
           "'Tum', 'Osni Cardoso Lula da Silva', "
           "'Laerte do Vando/Mirela Macedo/Robinho/Rogério Andrade Filho/Vitor Bonfim/Zó', "
           "'Aderbal Caldas/Luciano Simões Filho/Marquinho Viana/Paulo Rangel Lula da Silva', "
-          "'Iara Maria Loureiro de Oliveira');",
+          "'Iara Maria Loureiro de Oliveira', 'Especial de Assuntos Territoriais e Emancipacao "
+          " Temporaria Quarta-feira Quarta Tum Osni Cardoso Laerte do Vando Mirela Macedo Robinho "
+          " Rogerio Andrade Filho Vitor Bonfim Zo Aderbal Caldas Luciano Simoes Filho Marquinho "
+          " Viana Paulo Rangel');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. Especial do Complexo Intermodal da Fiol Porto Sul e Complexo Viário do Oeste (PONTE S-I)', "
           "'Temporária', '3115-7197', 'Sala Luis Cabral', 'Quarta-feira', '11h15', "
           "'Antonio Henrique Jr.', 'Jurailton Santos', "
           "'Aderbal Caldas/Fabíola Mansur/Ivana Bastos/Pedro Tavares/Rosemberg Lula Pinto/Zé Raimundo Lula', "
           "'Eduardo Salles/Maria del Carmen Lula/Osni Cardoso Lula da Silva/Tiago Correia', "
-          "'José Jorge Lopes dos Santos');",
+          "'José Jorge Lopes dos Santos', 'Especial do Complexo Intermodal da Fiol Porto Sul e "
+          " Complexo Viario do Oeste PONTE S-I Temporaria Quarta-feira Quarta Antonio Henrique Jr. "
+          " Jurailton Santos Aderbal Caldas Fabiola Mansur Ivana Bastos Pedro Tavares Rosemberg "
+          " Pinto Ze Raimundo Eduardo Salles Maria del Carmen Osni Cardoso Tiago Correia');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. Especial de Desenvolvimento Urbano', 'Temporária', '3115-7215/3115-2913', "
           "'Sala Jadiel Matos', 'Segunda-feira', '14h', 'Maria del Carmen Lula', 'Tiago Correia', "
           "'Alex da Piatã/Alex Lima/Júnior Muniz/Olívia Santana/Robinson Almeida Lula/Tum', "
-          "'Fabíola Mansur/Josafá Marinho/Marcelino Galo Lula', 'Janary Andrade Leite');",
+          "'Fabíola Mansur/Josafá Marinho/Marcelino Galo Lula', 'Janary Andrade Leite', 'Especial "
+          " de Desenvolvimento Urbano Temporaria Segunda-feira Segunda Maria del Carmen Tiago "
+          " Correia Alex da Piata Alex Lima Junior Muniz Olivia Santana Robinson Almeida Tum "
+          " Fabiola Mansur Josafa Marinho Marcelino Galo');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. Especial de Desenvolvimento Regional', 'Temporária', '3115-7306/3115-7307', "
           "'Sala Herculano Menezes', 'Quarta-feira', '11h', 'Alex da Piatã', 'Tiago Correia', "
           "'Antonio Henrique Jr./Capitão Alden/Fátima Nunes Lula/Olívia Santana/Roberto Carlos', "
           "'Neusa Lula Cadore/Pedro Tavares/Rogério Andrade Filho/Zó', "
-          "'Tania Maria da Silva Bispo');",
+          "'Tania Maria da Silva Bispo', 'Especial de Desenvolvimento Regional Temporaria Quarta-feira "
+          " Quarta Alex da Piata Tiago Correia Antonio Henrique Jr. Capitao Alden Fatima Nunes Olivia "
+          " Santana Roberto Carlos Neusa Cadore Pedro Tavares Rogerio Andrade Filho Zo');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. Especial da Promoção da Igualdade', 'Temporária', '3115-7110', 'Sala José Amando', "
           "'Terça-feira', '10h', 'Fátima Nunes Lula', 'Jurailton Santos', "
           "'Capitão Alden/Hilton Coelho/Jacó Lula da Silva/Maria del Carmen Lula/Olívia Santana/Samuel Júnior', "
           "'José de Arimateia/Marquinho Viana/Pastor Isidório Filho', "
-          "'José Jorge Lopes dos Santos');",
+          "'José Jorge Lopes dos Santos', 'Especial da Promocao da Igualdade Temporaria Terca-feira Terca "
+          " Fatima Nunes Jurailton Santos Capitao Alden Hilton Coelho Jaco Maria del "
+          " Carmen Olivia Santana Samuel Junior Jose de Arimateia Marquinho Viana Pastor Isidorio Filho');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. Especial para Regulamentação do Transporte Complementar da Bahia', "
           "'Temporária', '3115-7110', 'Sala Herculano Menezes', "
           "'Quarta-feira', '10h', 'Robinson Almeida Lula', 'José de Arimateia', "
           "'Alex Lima/Bira Corôa Lula/Jusmari Oliveira/Samuel Júnior/Tiago Correia/Zó', "
           "'Eduardo Salles/Osni Cardoso Lula da Silva/Pedro Tavares/Rosemberg Lula Pinto', "
-          "'Tania Marize da Silva Bispo');",
+          "'Tania Marize da Silva Bispo', 'Especial para Regulamentacao do Transporte Complementar da Bahia "
+          " Temporaria Quarta-feira Quarta Robinson Almeida Jose de Arimateia Alex Lima Bira Coroa "
+          " Jusmari Oliveira Samuel Junior Tiago Correia Zo Eduardo Salles Osni Cardoso "
+          " Pedro Tavares Rosemberg Pinto');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. Especial para Avaliação dos Impactos da Pandemia do Covid-19', "
           "'Temporária', '3115-7110', 'Sala Jadiel Matos', "
           "'Quarta-feira', '11h', 'Angelo Almeida', 'Talita Oliveira', "
           "'Alex da Piatã/Fátima Nunes Lula/Jacó Lula da Silva/Mirela Macedo/Tiago Correia/Vitor Bonfim', "
-          "'Fabíola Mansur/José de Arimateia/Maria del Carmen Lula/Olivia Santana/Pastor Isidório Filho', 'Bruna de Souza Santana');",
+          "'Fabíola Mansur/José de Arimateia/Maria del Carmen Lula/Olivia Santana/Pastor Isidório Filho', 'Bruna de Souza Santana', "
+          "'Especial para Avaliacao dos Impactos da Pandemia do Covid-19 Temporaria Quarta-feira Quarta Angelo Almeida Talita Oliveira "
+          " Alex da Piata Fatima Nunes Jaco Mirela Macedo Tiago Correia Vitor Bonfim Fabiola Mansur Jose de Arimateia "
+          " Maria del Carmen Olivia Santana Pastor Isidorio Filho');",
 
       //FIM DAS COMISSOES ----- INICIO DA MESA DIRETORA --ATUALIZAÇÃO
 
@@ -1684,9 +1726,6 @@ class BdPlunge {
           "('Zezito Pena', 'José Valdomiro Pena', '5000343', 'n', 'Jose Valdomiro Pena Zezito'),"
           "('Zilton Rocha', 'Justiniano Zilton Rocha', '903732', 'n', 'Justiniano Zilton Rocha'),"
           "('Zó', 'Crisóstomo Antonio Lima', '921266', 's', 'Crisostomo Antonio Lima Zo');",
-
-      "CREATE TABLE $tabControle ($idControleCol INTEGER PRIMARY KEY, $versionAtualCol  TEXT, "
-          "$ultimaVerifcCol DATETIME, $proximaVerifcCol DATETIME);",
     ];
 
     return queryesAtualiz;
@@ -1713,9 +1752,6 @@ class BdPlunge {
       "CREATE TABLE $tabDep ($depIdCol	INTEGER PRIMARY KEY, $depNomeCol TEXT, "
           "$depSexoCol TEXT, $depPartCol TEXT, $depGabCol TEXT, $depTelCol TEXT, "
           "$depEmailCol TEXT, $depFotoCol TEXT, $depLinkCol TEXT);",
-
-      "CREATE TABLE $tabControle ($idControleCol INTEGER PRIMARY KEY, $versionAtualCol  TEXT, "
-          "$ultimaVerifcCol DATETIME, $proximaVerifcCol DATETIME);",
 
       //inserts dos deputados
       "INSERT INTO $tabDep ($depNomeCol, $depSexoCol, $depPartCol,"
@@ -2033,156 +2069,206 @@ class BdPlunge {
           "$comissTipoCol TEXT, $comissTelCol	TEXT, $comissLocCol	TEXT, "
           "$comissDiaCol	TEXT, $comissHoraCol	TEXT, $comissPresCol	TEXT, "
           "$comissViceCol	TEXT, $comissMembCol	TEXT, $comissSupleCol	TEXT, "
-          "$comissAsseCol TEXT );",
+          "$comissAsseCol TEXT, $comissPesqCol );",
 
       //COMISSÕES INSERÇÃO DE DADOS PERMANENTES --
 
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Constituição e Justiça', 'Permanente', '3115-7306/3115-7307', "
           "'Sala Luís Cabral', 'Terça-feira', '10h', 'Marcelino Galo Lula', 'Paulo Câmara', "
           "'Alan Sanches/Antônio Henrique Jr./Euclides Fernandes/Ivana Bastos/Vitor Bonfim/Zé Raimundo Lula', "
-          "'Fabíola Mansur/Luciano Simões Filho/Pastor Isidório Filho/Roberto Carlos', 'Valeria Simões / Rainildes Rocha');",
+          "'Fabíola Mansur/Luciano Simões Filho/Pastor Isidório Filho/Roberto Carlos', 'Valeria Simões / Rainildes Rocha', "
+          "'Constituicao e Justica Permanente Terca-feira Terca Marcelino Galo Paulo Camara Alan Sanches Antonio Henrique "
+          " Jr. Euclides Fernandes Ivana Bastos Vitor Bonfim Ze Raimundo Fabiola Mansur Luciano Simoes Filho Pastor "
+          " Isidorio Filho Roberto Carlos');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Defesa do Consumidor e Relações de Trabalho', 'Permanente', '3115-7289', "
           "'Sala Jairo Azi', 'Quarta-feira', '10h', 'Capitão Alden', 'Fabrício Falcão', "
           "'Angelo Almeida/Jacó Lula da Silva/Júnior Muniz/Marcelinho Veiga/Marcelino Galo Lula/Tiago Correia', "
-          "'Fabíola Mansur/Maria del Carmen Lula/Pastor Isidório Filho/Talita Oliveira', 'Carinina Andrade');",
+          "'Fabíola Mansur/Maria del Carmen Lula/Pastor Isidório Filho/Talita Oliveira', 'Carinina Andrade', "
+          "'Defesa do Consumidor e Relacoes de Trabalho Permanente Quarta-feira Quarta Capitao Alden "
+          " Fabricio Falcao Angelo Almeida Jaco Junior Muniz Marcelinho Veiga Marcelino Galo Tiago "
+          " Correia Fabiola Mansur Maria del Carmen Pastor Isidorio Filho Talita Oliveira');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Agricultura e Política Rural', 'Permanente', '3115-7215/3115-2913', "
           "'Sala Jadiel Matos', 'Terça-feira', '09h', 'Jusmari Oliveira', 'Sandro Régis', "
           "'Eduardo Salles/Jacó Lula da Silva/Neusa Lula Cadore/Tom Araújo/Vitor Bonfim/Zó', "
-          "'Aderbal Caldas/Antonio Henrique Jr./Osni Cardoso Lula da Silva/Paulo Câmara/Pedro Tavares', 'Bruna de Souza Santana');",
+          "'Aderbal Caldas/Antonio Henrique Jr./Osni Cardoso Lula da Silva/Paulo Câmara/Pedro Tavares', "
+          "'Bruna de Souza Santana', 'Agricultura e Politica Rural Permanente Terca-feira Terca Jusmari "
+          " Oliveira Sandro Regis Eduardo Salles Jaco Neusa Cadore Tom Araujo Vitor Bonfim Zo "
+          " Aderbal Caldas Antonio Henrique Jr. Osni Cardoso Paulo Camara Pedro Tavares');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Educação, Cultura, Ciência e Tecnologia e Serviço Público', 'Permanente', "
           "'3115-7110', 'Sala José Amando', 'Terça-feira', '11h', 'Fabíola Mansur', 'Talita Oliveira', "
           "'Bira Corôa Lula/Olivia Santana/Osni Cardoso Lula da Silva/Robinson Almeida Lula/Rosemberg Lula Pinto/Soldado Prisco', "
-          "'Hilton Coelho/Jurandy Oliveira/Tiago Correia', 'Carinina Andrade');",
+          "'Hilton Coelho/Jurandy Oliveira/Tiago Correia', 'Carinina Andrade', 'Educacao Cultura Ciencia Tecnologia Servico Publico"
+          " Permanente Terca-feira Terca Fabiola Mansur Talita Oliveira Bira Coroa Olivia Santana Osni Cardoso Robinson Almeida "
+          " Rosemberg Pinto Soldado Prisco Hilton Coelho Jurandy Oliveira Tiago Correia');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Direitos Humanos e Segurança Pública', 'Permanente', '3115-7197', "
           "'Sala Herculano Menezes', 'Terça-feira', '10h30', 'Jacó Lula da Silva', 'Capitão Alden', "
           "'Fabíola Mansur/Fátima Nunes Lula/ Maria del Carmen Lula/Osni Cardoso Lula da Silva/Rogério Andrade Filho/Soldado Prisco', "
-          "'Hilton Coelho/Jurailton Santos/Pastor Isidório Filho/Robinson Almeida Lula', 'Elbani de Oliveira Sousa');",
+          "'Hilton Coelho/Jurailton Santos/Pastor Isidório Filho/Robinson Almeida Lula', 'Elbani de Oliveira Sousa', 'Direitos Humanos "
+          " Seguranca Publica Permanente Terca-feira Terca Jaco Capitao Alden Fabiola Mansur Fatima Nunes Maria del Carmen Osni Cardoso "
+          " Rogerio Andrade Filho Soldado Prisco Hilton Coelho Jurailton Santos Pastor Isidorio Filho Robinson Almeida');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. dos Direitos da Mulher', 'Permanente', '3115-7110', 'Sala José Amando', "
           "'Quarta-feira', '11h', 'Olívia Santana', 'Kátia Oliveira', "
           "'Fabíola Mansur/Fátima Nunes Lula/Ivana Bastos/Jusmari Oliveira/Neusa Lula Cadore/Talita Oliveira', "
-          "'Jacó Lula da Silva/José de Arimateia/Maria del Carmen Lula/Mirela Macedo', 'Elbani de Oliveira Sousa');",
+          "'Jacó Lula da Silva/José de Arimateia/Maria del Carmen Lula/Mirela Macedo', 'Elbani de Oliveira Sousa', "
+          "'Direitos da Mulher Permanente Quarta-feira Quarta Olivia Santana Katia Oliveira Fabiola Mansur Fatima "
+          " Nunes Ivana Bastos Jusmari Oliveira Neusa Cadore Talita Oliveira Jacó Jose de Arimateia "
+          " Maria del Carmen Mirela Macedo');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Finanças, Orçamento, Fiscalização e Controle', 'Permanente', "
           "'3115-7289', 'Sala Jairo Azi', 'Terça-feira', '11h15', 'Robinho', 'Tiago Correia', "
           "'Alan Castro/Diego Coronel/Luciano Simões Filho/Samuel Júnior/Vitor Bonfim/Zé Raimundo Lula', "
-          "'Jacó Lula da Silva/Marquinho Viana/Paulo Rangel Lula da Silva/Pedro Tavares', 'Iara Maria Loureiro de Oliveira');",
+          "'Jacó Lula da Silva/Marquinho Viana/Paulo Rangel Lula da Silva/Pedro Tavares', 'Iara Maria Loureiro de Oliveira', "
+          "'Financas Orcamento Fiscalizacao e Controle Permanente Terca-feira Terca Robinho Tiago Correia "
+          " Alan Castro Diego Coronel Luciano Simoes Filho Samuel Junior Vitor Bonfim Ze Raimundo Jaco "
+          " Marquinho Viana Paulo Rangel Pedro Tavares');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Infraestrutura, Desenvolvimento Econômico e Turismo', 'Permanente', "
           "'3115-7289', 'Sala Jairo Azi', 'Terça-feira', '9h30', 'Pedro Tavares', 'Niltinho', "
           "'Alex Lima/Eduardo Salles/Jusmari Oliveira/Maria del Carmen Lula/Roberto Carlos/Tom Araújo', "
-          "'Bira Corôa Lula/Robinson Almeida Lula/Tiago Correia/Tum', 'Raiana de Oliveira Pacheco');",
+          "'Bira Corôa Lula/Robinson Almeida Lula/Tiago Correia/Tum', 'Raiana de Oliveira Pacheco', 'Infraestrutura "
+          " Desenvolvimento Economico e Turismo Permanente Terca-feira Terca Pedro Tavares Niltinho Alex Lima Eduardo "
+          " Salles Jusmari Oliveira Maria del Carmen Roberto Carlos Tom Araujo Bira Coroa Robinson Almeida Tiago Correia Tum');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Meio Ambiente, Seca e Recursos Hídricos', 'Permanente', "
           "'3115-7235/3115-2909', 'Sala Eliel Martins', 'Quarta-feira', '10h15', "
           "'José de Arimateia', 'Marcelino Galo Lula', "
           "'Aderbal Caldas/Fátima Nunes Lula/Josafá Marinho/Marcelinho Veiga/Osni Cardoso Lula da Silva/Zó', "
-          "'Eduardo Salles/Jacó Lula da Silva/Jurailton Santos/Tum', 'Raiana de Oliveira Pacheco');",
+          "'Eduardo Salles/Jacó Lula da Silva/Jurailton Santos/Tum', 'Raiana de Oliveira Pacheco', 'Meio Ambiente "
+          " Seca e Recursos Hidricos Permanente Quarta-feira Quarta Jose de Arimateia Marcelino Galo Aderbal Caldas "
+          " Fatima Nunes Josafa Marinho Marcelinho Veiga Osni Cardoso Zo Eduardo Salles Jaco Jurailton Santos Tum');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. de Saúde e Saneamento', 'Permanente', '3115-7235/3115-2909', 'Sala Eliel Martins', "
           "'Terça-feira', '10h', 'Eduardo Alencar', 'José de Arimateia', "
           "'Alan Sanches/Alex da Piatã/Bira Corôa Lula/Fabíola Mansur/Jacó Lula da Silva/Niltinho', "
-          "'Angelo Almeida/Carlos Geilson/Euclides Fernandes/Jurandy Oliveira', 'Nancy Lima Pinto da Silva');",
+          "'Angelo Almeida/Carlos Geilson/Euclides Fernandes/Jurandy Oliveira', 'Nancy Lima Pinto da Silva', "
+          "'Saude e Saneamento Permanente Terca-feira Terca Eduardo Alencar Jose de Arimateia Alan Sanches "
+          " Alex da Piata Bira Coroa Fabiola Mansur Jaco Niltinho Angelo Almeida Carlos Geilson Euclides "
+          " Fernandes Jurandy Oliveira');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Cons. de Ética e Decoro Parlamentar', 'Permanente', '3115-7235/3115-2909', 'Não Informado', "
           "'Não Informado', 'Não Informado', 'Marquinho Viana', 'Sandro Régis', "
           "'Euclides Fernandes/Luciano Simões Filho/Aderbal Caldas/Bobô/Fabíola Mansur/Zé Raimundo Lula', "
-          "'Tiago Correia/Eduardo Alencar/Neusa Lula Cadore/Fátima Nunes Lula/Samuel Júnior/Vitor Bonfim/Eduardo Salles', 'Não Informado');",
+          "'Tiago Correia/Eduardo Alencar/Neusa Lula Cadore/Fátima Nunes Lula/Samuel Júnior/Vitor Bonfim/Eduardo Salles', "
+          "'Não Informado', 'Etica e Decoro Parlamentar Permanente Marquinho Viana Sandro Regis Euclides Fernandes Luciano "
+          " Simoes Filho Aderbal Caldas Bobo Fabiola Mansur Ze Raimundo Tiago Correia Eduardo Alencar Neusa Cadore "
+          " Fatima Nunes Samuel Junior Vitor Bonfim Eduardo Salles');",
 
       //FIM DAS PERMANENTES INICIO DAS TEMPORARIAS
 
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. Especial de Acompanhamento e Fiscalização de Barragens', 'Temporária', "
           "'3115-7289', 'Sala José Amando', 'Quarta-feira', '9h', 'Alan Castro', 'Laerte do Vando', "
           "'Eduardo Alencar/José de Arimateia/Júnior Muniz/Maria del Carmen Lula/Robinson Almeida Lula/Samuel Júnior', "
-          "'Marcelino Galo Lula/Tum', 'Tania Maria da Silva Bispo');",
+          "'Marcelino Galo Lula/Tum', 'Tania Maria da Silva Bispo', 'Especial de Acompanhamento e Fiscalizacao "
+          " de Barragens Temporaria Quarta-feira Quarta Alan Castro Laerte do Vando Eduardo Alencar Jose de Arimateia "
+          " Junior Muniz Maria del Carmen Robinson Almeida Samuel Junior Marcelino Galo Tum');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. Especial de Assuntos Territoriais e Emancipação', 'Temporária', "
           "'3115-7215/3115-2913', 'Sala Jadiel Matos', 'Quarta-feira', '9h15', "
           "'Tum', 'Osni Cardoso Lula da Silva', "
           "'Laerte do Vando/Mirela Macedo/Robinho/Rogério Andrade Filho/Vitor Bonfim/Zó', "
           "'Aderbal Caldas/Luciano Simões Filho/Marquinho Viana/Paulo Rangel Lula da Silva', "
-          "'Iara Maria Loureiro de Oliveira');",
+          "'Iara Maria Loureiro de Oliveira', 'Especial de Assuntos Territoriais e Emancipacao "
+          " Temporaria Quarta-feira Quarta Tum Osni Cardoso Laerte do Vando Mirela Macedo Robinho "
+          " Rogerio Andrade Filho Vitor Bonfim Zo Aderbal Caldas Luciano Simoes Filho Marquinho "
+          " Viana Paulo Rangel');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. Especial do Complexo Intermodal da Fiol Porto Sul e Complexo Viário do Oeste (PONTE S-I)', "
           "'Temporária', '3115-7197', 'Sala Luis Cabral', 'Quarta-feira', '11h15', "
           "'Antonio Henrique Jr.', 'Jurailton Santos', "
           "'Aderbal Caldas/Fabíola Mansur/Ivana Bastos/Pedro Tavares/Rosemberg Lula Pinto/Zé Raimundo Lula', "
           "'Eduardo Salles/Maria del Carmen Lula/Osni Cardoso Lula da Silva/Tiago Correia', "
-          "'José Jorge Lopes dos Santos');",
+          "'José Jorge Lopes dos Santos', 'Especial do Complexo Intermodal da Fiol Porto Sul e "
+          " Complexo Viario do Oeste PONTE S-I Temporaria Quarta-feira Quarta Antonio Henrique Jr. "
+          " Jurailton Santos Aderbal Caldas Fabiola Mansur Ivana Bastos Pedro Tavares Rosemberg "
+          " Pinto Ze Raimundo Eduardo Salles Maria del Carmen Osni Cardoso Tiago Correia');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. Especial de Desenvolvimento Urbano', 'Temporária', '3115-7215/3115-2913', "
           "'Sala Jadiel Matos', 'Segunda-feira', '14h', 'Maria del Carmen Lula', 'Tiago Correia', "
           "'Alex da Piatã/Alex Lima/Júnior Muniz/Olívia Santana/Robinson Almeida Lula/Tum', "
-          "'Fabíola Mansur/Josafá Marinho/Marcelino Galo Lula', 'Janary Andrade Leite');",
+          "'Fabíola Mansur/Josafá Marinho/Marcelino Galo Lula', 'Janary Andrade Leite', 'Especial "
+          " de Desenvolvimento Urbano Temporaria Segunda-feira Segunda Maria del Carmen Tiago "
+          " Correia Alex da Piata Alex Lima Junior Muniz Olivia Santana Robinson Almeida Tum "
+          " Fabiola Mansur Josafa Marinho Marcelino Galo');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. Especial de Desenvolvimento Regional', 'Temporária', '3115-7306/3115-7307', "
           "'Sala Herculano Menezes', 'Quarta-feira', '11h', 'Alex da Piatã', 'Tiago Correia', "
           "'Antonio Henrique Jr./Capitão Alden/Fátima Nunes Lula/Olívia Santana/Roberto Carlos', "
           "'Neusa Lula Cadore/Pedro Tavares/Rogério Andrade Filho/Zó', "
-          "'Tania Maria da Silva Bispo');",
+          "'Tania Maria da Silva Bispo', 'Especial de Desenvolvimento Regional Temporaria Quarta-feira "
+          " Quarta Alex da Piata Tiago Correia Antonio Henrique Jr. Capitao Alden Fatima Nunes Olivia "
+          " Santana Roberto Carlos Neusa Cadore Pedro Tavares Rogerio Andrade Filho Zo');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. Especial da Promoção da Igualdade', 'Temporária', '3115-7110', 'Sala José Amando', "
           "'Terça-feira', '10h', 'Fátima Nunes Lula', 'Jurailton Santos', "
           "'Capitão Alden/Hilton Coelho/Jacó Lula da Silva/Maria del Carmen Lula/Olívia Santana/Samuel Júnior', "
           "'José de Arimateia/Marquinho Viana/Pastor Isidório Filho', "
-          "'José Jorge Lopes dos Santos');",
+          "'José Jorge Lopes dos Santos', 'Especial da Promocao da Igualdade Temporaria Terca-feira Terca "
+          " Fatima Nunes Jurailton Santos Capitao Alden Hilton Coelho Jaco Maria del "
+          " Carmen Olivia Santana Samuel Junior Jose de Arimateia Marquinho Viana Pastor Isidorio Filho');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. Especial para Regulamentação do Transporte Complementar da Bahia', "
           "'Temporária', '3115-7110', 'Sala Herculano Menezes', "
           "'Quarta-feira', '10h', 'Robinson Almeida Lula', 'José de Arimateia', "
           "'Alex Lima/Bira Corôa Lula/Jusmari Oliveira/Samuel Júnior/Tiago Correia/Zó', "
           "'Eduardo Salles/Osni Cardoso Lula da Silva/Pedro Tavares/Rosemberg Lula Pinto', "
-          "'Tania Marize da Silva Bispo');",
+          "'Tania Marize da Silva Bispo', 'Especial para Regulamentacao do Transporte Complementar da Bahia "
+          " Temporaria Quarta-feira Quarta Robinson Almeida Jose de Arimateia Alex Lima Bira Coroa "
+          " Jusmari Oliveira Samuel Junior Tiago Correia Zo Eduardo Salles Osni Cardoso "
+          " Pedro Tavares Rosemberg Pinto');",
       "INSERT INTO $tabComiss ($comissNomeCol, $comissTipoCol, "
           "$comissTelCol, $comissLocCol, $comissDiaCol, $comissHoraCol, $comissPresCol,	"
-          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol) VALUES ("
+          "$comissViceCol, $comissMembCol, $comissSupleCol, $comissAsseCol, $comissPesqCol) VALUES ("
           "'Com. Especial para Avaliação dos Impactos da Pandemia do Covid-19', "
           "'Temporária', '3115-7110', 'Sala Jadiel Matos', "
           "'Quarta-feira', '11h', 'Angelo Almeida', 'Talita Oliveira', "
           "'Alex da Piatã/Fátima Nunes Lula/Jacó Lula da Silva/Mirela Macedo/Tiago Correia/Vitor Bonfim', "
-          "'Fabíola Mansur/José de Arimateia/Maria del Carmen Lula/Olivia Santana/Pastor Isidório Filho', 'Bruna de Souza Santana');",
+          "'Fabíola Mansur/José de Arimateia/Maria del Carmen Lula/Olivia Santana/Pastor Isidório Filho', 'Bruna de Souza Santana', "
+          "'Especial para Avaliacao dos Impactos da Pandemia do Covid-19 Temporaria Quarta-feira Quarta Angelo Almeida Talita Oliveira "
+          " Alex da Piata Fatima Nunes Jaco Mirela Macedo Tiago Correia Vitor Bonfim Fabiola Mansur Jose de Arimateia "
+          " Maria del Carmen Olivia Santana Pastor Isidorio Filho');",
 
       //FIM DAS COMISSOES ----- INICIO DA MESA DIRETORA
 
