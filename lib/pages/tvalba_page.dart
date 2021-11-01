@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:alba_app/pages/maisalba_page.dart';
 import 'package:alba_app/widgets/custom_drawer.dart';
 import 'package:connectivity/connectivity.dart';
@@ -86,34 +89,57 @@ class _PlaceTVAlbaWidgetState extends State<PlaceTVAlbaWidget> {
             child: FutureBuilder<bool>(
               future: started(),
               builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-                if (snapshot.data == true) {
-                  return AspectRatio(
-                    aspectRatio: _videoPlayerController.value.aspectRatio,
-                    child: VideoPlayer(_videoPlayerController),
-                  );
-                } else {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          CircularProgressIndicator(),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 10.0),
-                            child: Text(
-                              'Carregando...',
-                              style: TextStyle(
-                                  fontSize: 20.0,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white),
+                  if (snapshot.hasError) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(left: 10.0),
+                              child: Text(
+                                'Erro na conexão. Tente mais tarde!',
+                                style: TextStyle(
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  );
-                }
+                          ],
+                        ),
+                      ],
+                    );
+                  }
+                  else if (snapshot.data == true) {
+                    return AspectRatio(
+                      aspectRatio: _videoPlayerController.value.aspectRatio,
+                      child: VideoPlayer(_videoPlayerController),
+                    );
+                  } else {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            CircularProgressIndicator(),
+
+                            Padding(
+                              padding: const EdgeInsets.only(left: 10.0),
+                              child: Text(
+                                'Carregando...',
+                                style: TextStyle(
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  }
               },
             ),
           ),
